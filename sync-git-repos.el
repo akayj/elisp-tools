@@ -19,28 +19,37 @@
 
 (defun color-string (str &optional color)
   "Colorful STR with COLOR as optional."
-  (if color
-      (format "%s%s%s" color str *color-nc*)
-    (format "%s%s%s" *color-red* str *color-nc*)))
+  (let ((used-color (if color color *color-red*)))
+      (format "%s%s%s" used-color str *color-nc*)))
+
+(defun color-message (str &optional color)
+  "Print colorful STR in COLOR."
+  (message (color-string str color)))
 
 (defun is-git-repo (path)
   "Check PATH whether or not a git repo."
   (if (file-exists-p (concat path "/.git/config")) t nil))
 
-(message (color-string "开始同步git仓库到git.ppdaicorp.com..." *color-magenta*))
+(color-message "开始同步到git.ppdaicorp.com..." *color-magenta*)
 
-(dolist (f (directory-files "~/gits/ppc"))
-  (if (and
-       (file-directory-p f)
-       (not (string-equal "." f))
-       (not (string-equal ".." f)))
+(defun loop-repoes (basedir)
+  "Loop all repoes in BASEDIR."
+  (dolist (f (directory-files basedir t))
+    (if (and
+	 (not (string-equal ".DS_Store" (substring f -9)))
+	 (not (string-equal "." (substring f -1)))
+	 (not (string-equal ".." (substring f -2)))
+	 )
+	(if (is-git-repo f)
+	    (color-message (format "Git: %s" f) *color-green*)
+	  (color-message (format "SKIP: %s" f) *color-yellow*))
 
-      (if (is-git-repo f)
-	  (message (color-string (format "DIR: %s" f) *color-green*))
-	(message (color-string (format "%s is not a git repo!" f)))
-	)
+      (color-message (format "IGNORE: %s" f) *color-white*)
+      )
     )
   )
+
+(loop-repoes "~/gits")
 
 (provide 'sync-git-repos)
 ;;; sync-git-repos.el ends here
