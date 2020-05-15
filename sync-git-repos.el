@@ -30,8 +30,6 @@
   "Check PATH whether or not a git repo."
   (if (file-exists-p (concat path "/.git/config")) t nil))
 
-(color-message "开始同步到git.ppdaicorp.com..." *color-magenta*)
-
 (defun loop-repoes (basedir)
   "Loop all repoes in BASEDIR."
   (dolist (f (directory-files basedir t))
@@ -49,6 +47,8 @@
     )
   )
 
+;; main
+(color-message "开始同步到git.ppdaicorp.com..." *color-magenta*)
 (loop-repoes "~/gits")
 
 (provide 'sync-git-repos)
