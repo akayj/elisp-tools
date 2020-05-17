@@ -51,7 +51,7 @@
 	(let ((output
 	       (string-trim
 		(shell-command-to-string "git tag -l | xargs git rev-parse"))))
-	  (if (not (string-blank-p output ))
+	  (if (not (string-blank-p output))
 	      (color-message (concat "\sTag found =>\s" output))))
 	)
       )
