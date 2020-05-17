@@ -37,13 +37,11 @@
 (defun loop-repos (basedir)
   "Loop all repos in BASEDIR."
   (dolist (f (directory-files basedir t))
-    (if (member (file-name-nondirectory f) ignored-filenames)
+    (if (member (file-name-nondirectory f) ignored-filenames) nil
 	;; (color-message (format "IGNORE: %s" f))
-	nil
 
-      (if (not (git-repo-p f))
+      (if (not (git-repo-p f)) nil
 	  ;; (color-message (format "NotGit: %s" f) *color-yellow*)
-	  nil
 
 	(color-message (format "==== Git: %s ====" f) *color-green*)
 	(cd f)
@@ -59,7 +57,7 @@
   )
 
 ;; main
-(color-message "开始同步到git.ppdaicorp.com..." *color-magenta*)
+(color-message (concat "开始同步到 " remote-name " ...") *color-magenta*)
 (loop-repos "~/gits")
 
 (provide 'sync-git-repos)
