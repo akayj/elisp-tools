@@ -26,7 +26,16 @@
 
 (defun git-repo-p (path)
   "Check PATH whether or not a git repo."
-  (if (file-exists-p (concat path "/.git/config")) t nil))
+  (let ((gitconfig-path (concat path "/.git/config")))
+    (and
+     (file-exists-p gitconfig-path) ;; `.git/config' 存在
+     (not (string-blank-p
+	   (string-trim
+	    (shell-command-to-string
+	     (format "grep '^\\[remote \"%s\"\\]$' %s" remote-name gitconfig-path)))))
+     )
+    )
+  )
 
 (defun loop-repos (basedir)
   "Loop all repos in BASEDIR."
