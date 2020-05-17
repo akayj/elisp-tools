@@ -32,33 +32,27 @@
   "Check PATH whether or not a git repo."
   (if (file-exists-p (concat path "/.git/config")) t nil))
 
-(defvar ignored-filenames '("." ".." ".DS_Store"))
-
 (defun loop-repos (basedir)
   "Loop all repos in BASEDIR."
   (color-message
    (concat "Scanning " (expand-file-name basedir) " ...")
    *color-magenta*)
 
-  (dolist (f (directory-files basedir t))
-    (if (member (file-name-nondirectory f) ignored-filenames) nil
-	;; (color-message (format "IGNORE: %s" f))
+  (dolist (f (directory-files basedir t "[^\\(\\.\\|\\.\\.\\|\\.DS_Store\\)$]"))
+    (if (not (git-repo-p f)) nil
+      ;; (color-message (format "NotGit: %s" f) *color-yellow*)
 
-      (if (not (git-repo-p f)) nil
-	  ;; (color-message (format "NotGit: %s" f) *color-yellow*)
+      (color-message
+       (format "==== Repo: %s ====" (file-name-nondirectory f))
+       *color-green*)
 
-	(color-message
-	 (format "==== Repo: %s ====" (file-name-nondirectory f))
-	 *color-green*)
+      (cd f)
 
-	(cd f)
-
-	(let ((output
-	       (string-trim
-		(shell-command-to-string "git tag -l | xargs git rev-parse"))))
-	  (if (not (string-blank-p output))
-	      (color-message (concat "\sTag found =>\s" output))))
-	)
+      (let ((output
+	     (string-trim
+	      (shell-command-to-string "git tag -l | xargs git rev-parse"))))
+	(if (not (string-blank-p output))
+	    (color-message (concat "\sTag found =>\s" output))))
       )
     )
   )
