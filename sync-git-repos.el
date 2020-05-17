@@ -38,17 +38,21 @@
   "Loop all repos in BASEDIR."
   (dolist (f (directory-files basedir t))
     (if (member (file-name-nondirectory f) ignored-filenames)
-	(color-message (format "IGNORE: %s" f))
+	;; (color-message (format "IGNORE: %s" f))
+	nil
 
       (if (not (git-repo-p f))
-	  (color-message (format "NotGit: %s" f) *color-yellow*)
+	  ;; (color-message (format "NotGit: %s" f) *color-yellow*)
+	  nil
 
-	(color-message (format "Git: %s" f) *color-green*)
+	(color-message (format "==== Git: %s ====" f) *color-green*)
 	(cd f)
 
-	(let ((output (string-trim (shell-command-to-string "git tag -l | xargs git rev-parse"))))
+	(let ((output
+	       (string-trim
+		(shell-command-to-string "git tag -l | xargs git rev-parse"))))
 	  (if (not (string-blank-p output ))
-	      (color-message (concat "\t=>" output))))
+	      (color-message (concat "\sTag found =>\s" output))))
 	)
       )
     )
