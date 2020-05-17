@@ -19,14 +19,10 @@
 
 (defvar remote-name "gitlab-mirror")
 
-(defun color-string (str &optional color)
-  "Colorful STR with COLOR as optional."
-  (let ((used-color (if color color *color-white*)))
-      (format "%s%s%s" used-color str *color-nc*)))
-
 (defun color-message (str &optional color)
   "Print colorful STR in COLOR."
-  (message (color-string str color)))
+  (let ((used-color (if color color *color-white*)))
+    (message "%s%s%s" used-color str *color-nc*)))
 
 (defun git-repo-p (path)
   "Check PATH whether or not a git repo."
