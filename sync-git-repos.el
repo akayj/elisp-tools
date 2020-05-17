@@ -5,6 +5,8 @@
 ;;   Emacs -nw --script sync-git-repos.el
 
 ;;; Code:
+(require 'subr-x)
+
 ;; colors
 (defconst *color-nc* "\033[0m")
 (defconst *color-red* "\033[31m")
@@ -19,37 +21,42 @@
 
 (defun color-string (str &optional color)
   "Colorful STR with COLOR as optional."
-  (let ((used-color (if color color *color-red*)))
+  (let ((used-color (if color color *color-white*)))
       (format "%s%s%s" used-color str *color-nc*)))
 
 (defun color-message (str &optional color)
   "Print colorful STR in COLOR."
   (message (color-string str color)))
 
-(defun is-git-repo (path)
+(defun git-repo-p (path)
   "Check PATH whether or not a git repo."
   (if (file-exists-p (concat path "/.git/config")) t nil))
 
-(defun loop-repoes (basedir)
-  "Loop all repoes in BASEDIR."
-  (dolist (f (directory-files basedir t))
-    (if (and
-	 (not (string-equal ".DS_Store" (substring f -9)))
-	 (not (string-equal "." (substring f -1)))
-	 (not (string-equal ".." (substring f -2)))
-	 )
-	(if (is-git-repo f)
-	    (color-message (format "Git: %s" f) *color-green*)
-	  (color-message (format "SKIP: %s" f) *color-yellow*))
+(defvar ignored-filenames '("." ".." ".DS_Store"))
 
-      (color-message (format "IGNORE: %s" f) *color-white*)
+(defun loop-repos (basedir)
+  "Loop all repos in BASEDIR."
+  (dolist (f (directory-files basedir t))
+    (if (member (file-name-nondirectory f) ignored-filenames)
+	(color-message (format "IGNORE: %s" f))
+
+      (if (not (git-repo-p f))
+	  (color-message (format "NotGit: %s" f) *color-yellow*)
+
+	(color-message (format "Git: %s" f) *color-green*)
+	(cd f)
+
+	(let ((output (string-trim (shell-command-to-string "git tag -l | xargs git rev-parse"))))
+	  (if (not (string-blank-p output ))
+	      (color-message (concat "\t=>" output))))
+	)
       )
     )
   )
 
 ;; main
 (color-message "开始同步到git.ppdaicorp.com..." *color-magenta*)
-(loop-repoes "~/gits")
+(loop-repos "~/gits")
 
 (provide 'sync-git-repos)
 ;;; sync-git-repos.el ends here
