@@ -74,18 +74,15 @@
 
   (dolist (f (directory-files basedir t "[^\\(\\.\\|\\.\\.\\|\\.DS_Store\\)$]"))
     (unless (not (git-repo-p f))
-
-      (color-message (format "==== Repo: %-20s ===="
-			     (file-name-nondirectory f))
-		     *color-green*)
+      (color-message (format "Syncing %-20s" (file-name-nondirectory f)) *color-green*)
 
       (cd f)
 
       ;; 删除本地tag，并拉取 origin 最新的代码
-      (color-message (run-shell "git tag -l | xargs git tag -d > /dev/null && git pull"))
+      (run-shell "git tag -l | xargs git tag -d > /dev/null && git pull")
 
       ;; git push && git push --tags
-      (run-shell (concat "git push " remote-name))
+      (color-message (run-shell (concat "git push " remote-name)))
       (sync-tags)
       )
     )
