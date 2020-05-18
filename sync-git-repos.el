@@ -67,7 +67,7 @@
     )
   )
 
-(defun loop-repos (basedir)
+(defun sync-repos (basedir)
   "Loop all repos in BASEDIR."
   (color-message (concat "Scanning " (expand-file-name basedir) " ...")
 		 *color-magenta*)
@@ -92,7 +92,7 @@
   )
 
 ;; main
-(loop-repos "~/gits/ppc")
+(sync-repos "~/gits/ppc")
 
 (provide 'sync-git-repos)
 ;;; sync-git-repos.el ends here
