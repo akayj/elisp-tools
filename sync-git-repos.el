@@ -34,11 +34,38 @@
     (and
      (file-exists-p gitconfig-path) ;; 检查 `.git/config' 是否存在
      ;; 检查 remote repo 是否跟踪
-     (not
-      (string-blank-p
-       (run-shell
-	(format "grep '^\\[remote \"%s\"\\]$' %s"
-		remote-name gitconfig-path)))))))
+     (not (string-blank-p
+	   (run-shell (format "grep '^\\[remote \"%s\"\\]$' %s"
+			      remote-name gitconfig-path)))))))
+
+(defun sync-tags ()
+  "Sync all tags to remote repo."
+  (let* ((remote-tags-cmd (concat
+			   "git ls-remote --tags -q " remote-name
+			   " | grep -v '{}'"
+			   " | awk '{print $2,$1}'"
+			   " | awk -F '/' '{print $3}'"
+			   " | sed 's/ /+/g'"))
+	 (local-tags-cmd "git show-ref --tags")
+	 (remote-tags-table (run-shell remote-tags-cmd))
+	 (local-tags-table (run-shell local-tags-cmd)))
+
+    (dolist (line (split-string remote-tags-table "\n"))
+      (let* ((remote-tag (run-shell (format "echo '%s' | awk -F '+' '{print $1}'" line)))
+	     (local-tag-commit
+	      (run-shell (format "echo '%s' | grep /%s$ | awk '{print $1}'"
+				 local-tags-table remote-tag))))
+	(unless (string-blank-p remote-tag)
+	  (unless (string= line (concat remote-tag "+" local-tag-commit))
+	    (color-message (run-shell (concat "git push " remote-name " -d " remote-tag)))
+	    )
+	  )
+	)
+      )
+
+    (run-shell (concat "git push " remote-name " --tags"))
+    )
+  )
 
 (defun loop-repos (basedir)
   "Loop all repos in BASEDIR."
@@ -46,7 +73,7 @@
 		 *color-magenta*)
 
   (dolist (f (directory-files basedir t "[^\\(\\.\\|\\.\\.\\|\\.DS_Store\\)$]"))
-    (if (not (git-repo-p f)) nil
+    (unless (not (git-repo-p f))
 
       (color-message (format "==== Repo: %-20s ===="
 			     (file-name-nondirectory f))
@@ -54,9 +81,12 @@
 
       (cd f)
 
-      (let ((output (run-shell "git tag -l | xargs git rev-parse")))
-	(if (not (string-blank-p output))
-	    (color-message (concat "\sTag found =>\s" output))))
+      ;; 删除本地tag，并拉取 origin 最新的代码
+      (color-message (run-shell "git tag -l | xargs git tag -d > /dev/null && git pull"))
+
+      ;; git push && git push --tags
+      (run-shell (concat "git push " remote-name))
+      (sync-tags)
       )
     )
   )
