@@ -63,7 +63,7 @@
 	)
       )
 
-    (run-shell (concat "git push " remote-name " --tags"))
+    (color-message (run-shell (concat "git push " remote-name " --tags")))
     )
   )
 
