@@ -58,14 +58,10 @@
 	(unless (string-blank-p remote-tag)
 	  (unless (string= line (concat remote-tag "+" local-tag-commit))
 	    (color-message (run-shell (concat "git push " remote-name " -d " remote-tag)))
-	    )
-	  )
-	)
-      )
+	    ))))
 
     (color-message (run-shell (concat "git push " remote-name " --tags")))
-    )
-  )
+    ))
 
 (defun sync-repos (basedir)
   "Loop all repos in BASEDIR."
