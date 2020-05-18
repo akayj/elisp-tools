@@ -64,25 +64,27 @@
     ))
 
 (defun sync-repos (basedir)
-  "Loop all repos in BASEDIR."
+  "Sync all repos under the BASEDIR."
   (color-message (concat "Scanning " (expand-file-name basedir) " ...")
 		 *color-magenta*)
 
-  (dolist (f (directory-files basedir t "[^\\(\\.\\|\\.\\.\\|\\.DS_Store\\)$]"))
-    (unless (not (git-repo-p f))
-      (color-message (format "Syncing %-20s" (file-name-nondirectory f)) *color-green*)
+  (if (file-exists-p basedir)
+      (dolist (f (directory-files basedir t "[^\\(\\.\\|\\.\\.\\|\\.DS_Store\\)$]"))
+	(unless (not (git-repo-p f))
+	  (color-message (format "Syncing %-20s" (file-name-nondirectory f)) *color-green*)
 
-      (cd f)
+	  (cd f)
 
-      ;; 删除本地tag，并拉取 origin 最新的代码
-      (run-shell "git tag -l | xargs git tag -d > /dev/null && git pull")
+	  ;; 删除本地tag，并拉取 origin 最新的代码
+	  (run-shell "git tag -l | xargs git tag -d > /dev/null && git pull")
 
-      ;; git push && git push --tags
-      (color-message (run-shell (concat "git push " remote-name)))
-      (sync-tags)
-      )
-    )
-  )
+	  ;; git push && git push --tags
+	  (color-message (run-shell (concat "git push " remote-name)))
+	  (sync-tags)
+	  )
+
+	(color-message (format "%s done" f)))
+    (color-message (format "%s not exists!" basedir))))
 
 ;; main
 (sync-repos "~/gits/ppc")
