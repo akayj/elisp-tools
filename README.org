@@ -1,2 +1,7 @@
 * elisp-tools
 elisp scripts used by my own.
+
+** How to run
+#+BEGIN_SRC shell
+Emacs --script sync-git-repos.el
+#+END_SRC
