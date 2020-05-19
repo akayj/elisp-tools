@@ -82,6 +82,8 @@
       (sync-tags)
       )
     )
+
+  (color-message "all done!" *color-magenta*)
   )
 
 ;; main
