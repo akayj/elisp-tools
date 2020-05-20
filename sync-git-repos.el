@@ -1,4 +1,4 @@
-;;; sync-git-repos.el -- sample emacs lisp script
+;;; sync-git-repos.el -- sample emacs lisp script -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;; Usage in Shell:
