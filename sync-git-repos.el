@@ -63,6 +63,10 @@
     (color-message (run-shell (concat "git push " remote-name " --tags")))
     ))
 
+(defun current-branch ()
+  "Return current branch name."
+  (run-shell "git branch | grep '*' | awk '{print $2}'"))
+
 (defun sync-repos (basedir)
   "Sync all repos under the BASEDIR."
   (color-message (concat "Scanning " (expand-file-name basedir) " ...") *color-cyan*)
@@ -70,9 +74,9 @@
   (if (file-exists-p basedir)
       (dolist (f (directory-files basedir t "[^\\(\\.\\|\\.\\.\\|\\.DS_Store\\)$]"))
 	(unless (not (git-repo-p f))
-	  (color-message (format "Syncing %-20s" (file-name-nondirectory f)) *color-green*)
-
 	  (cd f)
+
+	  (color-message (format "Syncing %-20s @%s" (file-name-nondirectory f) (current-branch)) *color-green*)
 
 	  ;; 删除本地tag，并拉取 origin 最新的代码
 	  (run-shell "git tag -l | xargs git tag -d > /dev/null && git pull")
